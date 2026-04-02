@@ -25,7 +25,6 @@ This project explores the use of machine learning to detect malicious network ac
 
 ## Folder Structure
 
-- `scripts/` - Python scripts for training and evaluation
 - `notebooks/` - Jupyter notebooks
 - `sample_data/` - small dataset samples
 - `results/` - model outputs and metrics
