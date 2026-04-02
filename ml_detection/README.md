@@ -27,7 +27,7 @@ This project explores the use of machine learning to detect malicious network ac
 
 - `notebooks/` - Jupyter notebooks
 - `sample_data/` - small dataset samples
-- `results/` - model outputs and metrics
+- `outputs/` - model outputs and metrics
 
 ## Future Work
 
