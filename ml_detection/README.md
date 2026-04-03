@@ -1,36 +1,69 @@
 # Machine Learning Intrusion Detection (CICIDS2017)
 
 ## Overview
+This project focuses on building a machine learning-based intrusion detection system using the CICIDS2017 dataset to identify malicious network activity and anomalous behavior.
 
-This project explores the use of machine learning to detect malicious network activity using the CICIDS2017 dataset. The goal is to understand how ML can support intrusion detection by identifying attack patterns and anomalous behavior.
+The goal is to explore how machine learning can enhance traditional intrusion detection systems by improving detection accuracy and reducing false positives in a SOC environment.
+
+---
 
 ## What I Built
+- Processed and analyzed network traffic data from CICIDS2017
+- Performed feature analysis and preprocessing using Python
+- Developed machine learning models for intrusion detection
+- Generated predictions for normal vs. malicious activity
+- Evaluated model performance using standard classification metrics
 
-- Processed and analyzed network traffic data
-- Trained machine learning models for intrusion detection
-- Evaluated performance using classification metrics
-- Explored how ML can enhance traditional IDS systems
+---
 
 ## Models Used
+- **Random Forest** – supervised classification for detecting known attack patterns  
+- **Isolation Forest** – unsupervised anomaly detection for identifying unusual behavior  
 
-- Random Forest
-- Isolation Forest
+---
+
+## Evaluation Metrics
+Models were evaluated using:
+- Accuracy  
+- Precision  
+- Recall  
+- F1-Score  
+
+These metrics were used to assess detection effectiveness and false positive rates.
+
+---
+
+## Project Structure
+ml_detection/
+├── models/ # Saved/trained ML models
+├── notebooks/ # Jupyter notebooks for training and analysis
+├── outputs/ # Model outputs, predictions, and evaluation results
+└── README.md
+
+
+---
 
 ## Key Concepts
+- Anomaly Detection  
+- Supervised vs. Unsupervised Learning  
+- Network Traffic Analysis  
+- Model Evaluation  
+- Cybersecurity Analytics  
 
-- Anomaly Detection
-- Data Analysis
-- Model Evaluation
-- Security Research
-
-## Folder Structure
-
-- `notebooks/` - Jupyter notebooks
-- `sample_data/` - small dataset samples
-- `outputs/` - model outputs and metrics
+---
 
 ## Future Work
+- Improve feature engineering and model tuning  
+- Expand dataset testing for better generalization  
+- Integrate ML predictions with Suricata alerts  
+- Feed results into Splunk dashboards for real-time monitoring  
+- Develop automated detection and response workflows  
 
-- Improve model tuning and feature selection
-- Integrate ML output with Suricata-based detection
-- Explore real-time detection capabilities
+---
+
+## Project Context
+This project began as part of a research-focused cybersecurity study and is being further developed as a standalone module within a larger AI-powered IDS system.
+
+The long-term goal is to integrate this ML detection pipeline into a real-time environment using Suricata and Splunk to simulate SOC-level monitoring and response.
+
+---
