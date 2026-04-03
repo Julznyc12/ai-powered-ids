@@ -32,7 +32,7 @@ The goal is to simulate a SOC environment where alerts, logs, and intelligent de
 - Isolation Forest (anomaly detection)
 - Evaluated using precision, recall, and F1-score
 
-👉 See ML module: `ml_detection/`
+--> See ML module: `ml_detection/`
 ---
 
 ## Key Features
