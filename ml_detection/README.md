@@ -8,17 +8,35 @@ The goal is to explore how machine learning can enhance traditional intrusion de
 ---
 
 ## What I Built
-- Processed and analyzed network traffic data from CICIDS2017
-- Performed feature analysis and preprocessing using Python
-- Developed machine learning models for intrusion detection
-- Generated predictions for normal vs. malicious activity
-- Evaluated model performance using standard classification metrics
+- Processed and analyzed network traffic data from CICIDS2017  
+- Performed feature analysis and preprocessing using Python  
+- Developed two machine learning detection approaches:
+  - A general attack classifier for broad threat detection  
+  - A DDoS-focused model for targeted detection of denial-of-service activity  
+- Generated predictions for normal vs. malicious traffic  
+- Evaluated model performance using standard classification metrics  
 
 ---
 
 ## Models Used
 - **Random Forest** – supervised classification for detecting known attack patterns  
 - **Isolation Forest** – unsupervised anomaly detection for identifying unusual behavior  
+
+These models were applied across both detection approaches to compare performance and improve overall detection capability.
+
+---
+
+## Model Design
+
+### General Attack Classifier
+- Designed to detect a wide range of attack types present in the CICIDS2017 dataset  
+- Focuses on distinguishing normal traffic from multiple categories of malicious behavior  
+- Provides a baseline for overall intrusion detection performance  
+
+### DDoS-Focused Model
+- Specifically designed to detect denial-of-service attack patterns  
+- Focuses on identifying abnormal traffic spikes and high-volume behavior  
+- Improves detection for more targeted and high-impact attack scenarios  
 
 ---
 
@@ -55,5 +73,3 @@ These metrics were used to assess detection effectiveness and false positive rat
 This project began as part of a research-focused cybersecurity study and is being further developed as a standalone module within a larger AI-powered IDS system.
 
 The long-term goal is to integrate this ML detection pipeline into a real-time environment using Suricata and Splunk to simulate SOC-level monitoring and response.
-
----

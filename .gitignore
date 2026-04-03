@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.ipynb_checkpoints/
+ml_detection/outputs/
+ml_detection/models/*.pkl
