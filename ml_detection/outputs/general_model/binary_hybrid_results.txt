@@ -1,0 +1,15 @@
+Hybrid Accuracy: 0.9178573608428481
+
+Confusion Matrix:
+[[355600  40993]
+ [   727 110577]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      0.90      0.94    396593
+           1       0.73      0.99      0.84    111304
+
+    accuracy                           0.92    507897
+   macro avg       0.86      0.95      0.89    507897
+weighted avg       0.94      0.92      0.92    507897

@@ -1,0 +1,27 @@
+Multiclass Accuracy: 0.9954242690939304
+
+Confusion Matrix:
+[[395059    140    102     16    933      0     16    327]
+ [   153    238      0      0      0      0      0      0]
+ [     7      0   2759      0      0      0      0      0]
+ [    24      0      0  25580      1      0      0      0]
+ [   225      0      0      6  50098      0      5      9]
+ [     1      0      0      0      0      1      0      0]
+ [     5      0      0      0     11      0  31743      2]
+ [   337      0      0      0      3      0      1     95]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      BENIGN       1.00      1.00      1.00    396593
+         Bot       0.63      0.61      0.62       391
+  BruteForce       0.96      1.00      0.98      2766
+        DDoS       1.00      1.00      1.00     25605
+         DoS       0.98      1.00      0.99     50343
+  Heartbleed       1.00      0.50      0.67         2
+    PortScan       1.00      1.00      1.00     31761
+   WebAttack       0.22      0.22      0.22       436
+
+    accuracy                           1.00    507897
+   macro avg       0.85      0.79      0.81    507897
+weighted avg       1.00      1.00      1.00    507897
