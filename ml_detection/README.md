@@ -33,16 +33,6 @@ These metrics were used to assess detection effectiveness and false positive rat
 
 ---
 
-## Project Structure
-ml_detection/
-├── models/ # Saved/trained ML models
-├── notebooks/ # Jupyter notebooks for training and analysis
-├── outputs/ # Model outputs, predictions, and evaluation results
-└── README.md
-
-
----
-
 ## Key Concepts
 - Anomaly Detection  
 - Supervised vs. Unsupervised Learning  
