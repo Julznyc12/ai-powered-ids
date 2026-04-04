@@ -1,0 +1,3 @@
+Destination Port,Flow Duration,Total Fwd Packets,Total Backward Packets,Fwd Packet Length Mean,Bwd Packet Length Mean,Flow Bytes/s,Flow Packets/s,prediction,prediction_label,attack_type
+443,120000,12,10,256.5,198.3,45210.4,183.3,0,BENIGN,BENIGN
+80,45000,5,4,128.0,96.0,22150.8,200.0,0,BENIGN,BENIGN

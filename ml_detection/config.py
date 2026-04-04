@@ -15,11 +15,13 @@ FEATURES = [
 
 # Model directory
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
+ALERTS_DIR = os.path.join(os.path.dirname(__file__), "alerts")
 
 # Model file paths (general model)
 SCALER_PATH = os.path.join(MODEL_DIR, "general_scaler.pkl")
 BINARY_DETECTOR_PATH = os.path.join(MODEL_DIR, "general_binary_rf_model.pkl")
 ATTACK_CLASSIFIER_PATH = os.path.join(MODEL_DIR, "general_attack_classifier.pkl")
+DEFAULT_OUTPUT_CSV = os.path.join(ALERTS_DIR, "predictions.csv")
 
 # Label mappings
 BINARY_LABELS = {

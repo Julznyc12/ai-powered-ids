@@ -5,21 +5,15 @@ Load trained models and classify network traffic as BENIGN or ATTACK
 import os
 import sys
 import argparse
-try:
-    import pandas as pd
-    import joblib
-except ModuleNotFoundError as e:
-    missing_module = getattr(e, "name", "a required dependency")
-    print(
-        f"Missing Python package: {missing_module}. "
-        "Install project dependencies with: pip install -r requirements.txt"
-    )
-    sys.exit(1)
+import pandas as pd
+import numpy as np
+import joblib
 from config import (
     FEATURES,
     SCALER_PATH,
     BINARY_DETECTOR_PATH,
     ATTACK_CLASSIFIER_PATH,
+    DEFAULT_OUTPUT_CSV,
     BINARY_LABELS,
     ATTACK_TYPES
 )
@@ -43,7 +37,7 @@ def preprocess_data(df):
     df.columns = df.columns.str.strip()
 
     # Replace infinite values with NaN
-    df.replace([float("inf"), float("-inf")], pd.NA, inplace=True)
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     # Get indices of rows with valid features (before dropping)
     valid_indices = df.dropna(subset=FEATURES).index
@@ -79,7 +73,7 @@ def predict(input_csv, output_csv):
     binary_preds = binary_detector.predict(X_scaled)
 
     # Attack type classification only for predicted attacks
-    attack_preds = pd.Series(["BENIGN"] * len(X), index=X.index, dtype=object)
+    attack_preds = np.full(len(X), "BENIGN", dtype=object)
     attack_mask = binary_preds == 1
     if attack_mask.any():
         attack_preds[attack_mask] = attack_classifier.predict(X_scaled[attack_mask])
@@ -91,6 +85,9 @@ def predict(input_csv, output_csv):
     df_results["attack_type"] = attack_preds
 
     # Save results
+    output_dir = os.path.dirname(output_csv)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     df_results.to_csv(output_csv, index=False)
     print(f"Results saved to {output_csv}")
 
@@ -111,8 +108,8 @@ def main():
     )
     parser.add_argument(
         "-o", "--output",
-        default="predictions.csv",
-        help="Output CSV file with predictions (default: predictions.csv)"
+        default=DEFAULT_OUTPUT_CSV,
+        help=f"Output CSV file with predictions (default: {DEFAULT_OUTPUT_CSV})"
     )
 
     args = parser.parse_args()
@@ -134,3 +131,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
