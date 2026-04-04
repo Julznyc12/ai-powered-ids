@@ -69,6 +69,31 @@ These metrics were used to assess detection effectiveness and false positive rat
 
 ---
 
+## Usage - Running Inference
+
+The `main.py` script loads pre-trained models and runs inference on new network flow data:
+
+```bash
+python main.py input_data.csv -o predictions.csv
+```
+
+**Requirements:**
+- Input CSV must contain the 8 required network flow features (see `config.py`)
+- Models must be trained and saved in the `models/` directory
+
+**Output:**
+- CSV file with original data + three new columns:
+  - `prediction`: Binary classification (0=BENIGN, 1=ATTACK)
+  - `prediction_label`: Readable label (BENIGN/ATTACK)
+  - `attack_type`: Specific attack category if detected
+
+**Example:**
+```bash
+python main.py test_traffic.csv -o results.csv
+```
+
+---
+
 ## Project Context
 This project began as part of a research-focused cybersecurity study and is being further developed as a standalone module within a larger AI-powered IDS system.
 
