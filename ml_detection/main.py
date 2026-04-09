@@ -5,12 +5,12 @@ Load trained models and classify network traffic as BENIGN or ATTACK
 import os
 import sys
 import argparse
+from datetime import datetime, timezone
 import pandas as pd
 import numpy as np
 import joblib
 from config import (
     FEATURES,
-    SCALER_PATH,
     BINARY_DETECTOR_PATH,
     ATTACK_CLASSIFIER_PATH,
     DEFAULT_OUTPUT_CSV,
@@ -18,14 +18,38 @@ from config import (
     ATTACK_TYPES
 )
 
+ALERT_SEVERITY = {
+    "BENIGN": "info",
+    "DoS": "high",
+    "DDoS": "critical",
+    "PortScan": "medium",
+    "BruteForce": "high",
+    "WebAttack": "high",
+    "Bot": "high",
+    "Heartbleed": "critical",
+}
+
+ALERT_ACTIONS = {
+    "BENIGN": "No action required",
+    "DoS": "Validate traffic spike, identify affected asset, and apply rate limiting if needed",
+    "DDoS": "Escalate immediately, confirm service impact, and activate DDoS mitigation controls",
+    "PortScan": "Review source activity, confirm reconnaissance, and consider blocking the source",
+    "BruteForce": "Review authentication logs, lock targeted accounts, and block the source if confirmed",
+    "WebAttack": "Inspect web server logs, validate exploitation attempts, and isolate affected hosts if needed",
+    "Bot": "Check for command-and-control behavior, isolate the endpoint, and investigate persistence",
+    "Heartbleed": "Treat as critical, identify exposed services, rotate secrets, and patch vulnerable systems",
+}
+
 
 def load_models():
-    """Load pre-trained models and scaler."""
+    """Load pre-trained models."""
     try:
-        scaler = joblib.load(SCALER_PATH)
         binary_detector = joblib.load(BINARY_DETECTOR_PATH)
         attack_classifier = joblib.load(ATTACK_CLASSIFIER_PATH)
-        return scaler, binary_detector, attack_classifier
+        for model in (binary_detector, attack_classifier):
+            if hasattr(model, "n_jobs"):
+                model.set_params(n_jobs=1)
+        return binary_detector, attack_classifier
     except FileNotFoundError as e:
         print(f"Error: Model file not found. {e}")
         sys.exit(1)
@@ -48,6 +72,65 @@ def preprocess_data(df):
     return X, valid_indices
 
 
+def build_soc_alerts(df_results):
+    """Build SOC-style alerts from attack predictions."""
+    alert_rows = df_results[df_results["prediction_label"] == "ATTACK"].copy()
+    if alert_rows.empty:
+        return pd.DataFrame(columns=[
+            "timestamp",
+            "alert_id",
+            "severity",
+            "status",
+            "category",
+            "dst_port",
+            "flow_duration",
+            "flow_bytes_per_sec",
+            "flow_packets_per_sec",
+            "confidence",
+            "summary",
+            "recommended_action",
+        ])
+
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    alert_rows = alert_rows.reset_index(drop=True)
+    alert_rows["timestamp"] = generated_at
+    alert_rows["alert_id"] = [f"IDS-{idx:06d}" for idx in range(1, len(alert_rows) + 1)]
+    alert_rows["severity"] = alert_rows["attack_type"].map(ALERT_SEVERITY).fillna("medium")
+    alert_rows["status"] = "new"
+    alert_rows["category"] = alert_rows["attack_type"]
+    alert_rows["dst_port"] = alert_rows["Destination Port"]
+    alert_rows["flow_duration"] = alert_rows["Flow Duration"]
+    alert_rows["flow_bytes_per_sec"] = alert_rows["Flow Bytes/s"]
+    alert_rows["flow_packets_per_sec"] = alert_rows["Flow Packets/s"]
+    alert_rows["confidence"] = np.where(
+        alert_rows["severity"].isin(["critical", "high"]),
+        0.90,
+        0.75,
+    )
+    alert_rows["summary"] = alert_rows.apply(
+        lambda row: f"{row['attack_type']} activity detected targeting destination port {row['dst_port']}",
+        axis=1,
+    )
+    alert_rows["recommended_action"] = alert_rows["attack_type"].map(ALERT_ACTIONS).fillna(
+        "Review event details and investigate the affected host"
+    )
+
+    return alert_rows[[
+        "timestamp",
+        "alert_id",
+        "severity",
+        "status",
+        "category",
+        "dst_port",
+        "flow_duration",
+        "flow_bytes_per_sec",
+        "flow_packets_per_sec",
+        "confidence",
+        "summary",
+        "recommended_action",
+    ]]
+
+
 def predict(input_csv, output_csv):
     """Run inference on input data and save predictions."""
     print(f"Loading data from {input_csv}...")
@@ -63,20 +146,17 @@ def predict(input_csv, output_csv):
         sys.exit(1)
 
     print("Loading models...")
-    scaler, binary_detector, attack_classifier = load_models()
-
-    # Scale features
-    X_scaled = scaler.transform(X)
+    binary_detector, attack_classifier = load_models()
 
     print("Running predictions...")
     # Binary classification: BENIGN (0) or ATTACK (1)
-    binary_preds = binary_detector.predict(X_scaled)
+    binary_preds = binary_detector.predict(X)
 
     # Attack type classification only for predicted attacks
     attack_preds = np.full(len(X), "BENIGN", dtype=object)
     attack_mask = binary_preds == 1
     if attack_mask.any():
-        attack_preds[attack_mask] = attack_classifier.predict(X_scaled[attack_mask])
+        attack_preds[attack_mask] = attack_classifier.predict(X.loc[attack_mask])
 
     # Build results dataframe with only valid rows
     df_results = df.loc[valid_indices].copy()
@@ -91,11 +171,35 @@ def predict(input_csv, output_csv):
     df_results.to_csv(output_csv, index=False)
     print(f"Results saved to {output_csv}")
 
+    alerts_output_csv = os.path.join(output_dir or os.getcwd(), "soc_alerts.csv")
+    df_alerts = build_soc_alerts(df_results)
+    df_alerts.to_csv(alerts_output_csv, index=False)
+    print(f"SOC alerts saved to {alerts_output_csv}")
+
     # Print summary
     print("\n=== Prediction Summary ===")
     print(df_results["prediction_label"].value_counts())
     print("\nAttack type distribution:")
     print(df_results["attack_type"].value_counts())
+
+    attack_count = int((df_results["prediction_label"] == "ATTACK").sum())
+    benign_count = int((df_results["prediction_label"] == "BENIGN").sum())
+    print("\n=== SOC Alert Summary ===")
+    print(f"Total flows processed: {len(df_results)}")
+    print(f"Benign flows: {benign_count}")
+    print(f"Attack flows: {attack_count}")
+
+    if attack_count:
+        print("Detected attack types:")
+        attack_summary = (
+            df_results.loc[df_results["prediction_label"] == "ATTACK", "attack_type"]
+            .value_counts()
+        )
+        for attack_type, count in attack_summary.items():
+            print(f"- {attack_type}: {count}")
+        print(f"SOC alerts generated: {len(df_alerts)}")
+    else:
+        print("No attack traffic detected. SOC alerts generated: 0")
 
 
 def main():
